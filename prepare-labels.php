@@ -3,6 +3,9 @@ $configTemplate = "template-labels.rtf";
 $configPrintDir = "print";
 $configPrintFilePrefix = "labels";
 
+// Print only names as CVS
+$justNames = false;
+
 function createFileForPrinting($user)
 {
 	global $configTemplate;
@@ -39,7 +42,22 @@ if (false === isset($argv[1]))
 	return;
 }
 
-$file = $argv[1];
+$shortopts = "f:";
+$shortopts .= "n::";
+$options = getopt($shortopts);
+
+if (true === isset($options['n']))
+{
+	$justNames = true;
+}
+
+if (false === isset($options['f']))
+{
+	echo "Please provide CSV file with the -f option.";
+	return;
+}
+
+$file = $options['f'];
 
 if (false === file_exists($file))
 {
@@ -60,6 +78,13 @@ $user = array();
 while (($line = fgets($handle, 4096)) !== false)
 {
 	$csv = str_getcsv($line);
+
+	if (true === $justNames)
+	{
+		echo $text = "\"{$csv[0]} {$csv[1]}\"\n";
+		continue;
+	}
+
 	// Name
 	$text = "{$csv[0]} {$csv[1]}".'{\pard\par}';
 	// Company
@@ -86,7 +111,7 @@ while (($line = fgets($handle, 4096)) !== false)
 
 	//Update counter
 	$labelCount++;
-	if (8 == $labelCount)
+	if ((8 == $labelCount) && (false === $justNames))
 	{
 		createFileForPrinting($user);
 		// reset array with user's data
@@ -97,7 +122,7 @@ while (($line = fgets($handle, 4096)) !== false)
 fclose($handle);
 
 // Are there any labels left?
-if (0 < $labelCount)
+if ((0 < $labelCount) && (false === $justNames))
 {
 	createFileForPrinting($user);
 }
