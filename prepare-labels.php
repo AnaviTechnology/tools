@@ -27,7 +27,10 @@ function createFileForPrinting($user)
 	$content = file_get_contents($filePrint);
 	for($iter=0;$iter<count($user);$iter++)
 	{
-		$content = str_replace("placeholder-address{$iter}",$user[$iter]['address'],$content);
+		//Make sure that all characters in the address will be correctly
+		//written to the rft using utf-8 encoding for them
+		$address = mb_convert_encoding($user[$iter]['address'], 'ISO-8859-15','utf-8');
+		$content = str_replace("placeholder-address{$iter}",$address, $content);
 		$content = str_replace("placeholder-tel{$iter}",$user[$iter]['tel'],$content);
 	}
 
